@@ -45,3 +45,8 @@ robot-receiver\main.o: D:\Programy\ARM-Keil\Keil_v5\ARM\ARMCC\Bin\..\include\std
 robot-receiver\main.o: D:\Programy\ARM-Keil\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 robot-receiver\main.o: D:\Programy\ARM-Keil\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 robot-receiver\main.o: D:\Programy\ARM-Keil\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+robot-receiver\main.o: ../MDK-ARM/encoder.h
+robot-receiver\main.o: ../MDK-ARM/pid.h
+robot-receiver\main.o: ../MDK-ARM/motor.h
+robot-receiver\main.o: D:\Programy\ARM-Keil\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+robot-receiver\main.o: ../MDK-ARM/robot.h

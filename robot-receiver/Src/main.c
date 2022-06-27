@@ -27,6 +27,11 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "MY_NRF24.h"
+
+#include "encoder.h"
+#include "pid.h"
+#include "motor.h"
+#include "robot.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,6 +51,18 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
+sEncoder encoder_left;
+sEncoder encoder_right;
+
+sPid pid_left;
+sPid pid_right;
+
+sMotor motor_left;
+sMotor motor_right;
+
+sRobot Robot;
+
 uint32_t led_tick = 0;
 uint32_t received_packet = 0;
 
@@ -105,6 +122,25 @@ int main(void)
   MX_TIM5_Init();
   MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
+
+	PID_INIT(&pid_left, 	0.02f, 0.0f, 0.0f, 25000);
+	PID_INIT(&pid_right, 	0.02f, 0.0f, 0.0f, 25000);
+	
+	ENCODER_INIT(&encoder_left, 	&htim3);
+	ENCODER_INIT(&encoder_right, 	&htim4);
+	
+	MOTOR_INIT(&motor_left, 	&htim1, TIM_CHANNEL_1, MOTL_IN3_GPIO_Port, MOTL_IN3_Pin, MOTL_IN4_GPIO_Port, MOTL_IN4_Pin, &encoder_left,  &pid_left);
+	MOTOR_INIT(&motor_right, 	&htim2, TIM_CHANNEL_2, MOTR_IN1_GPIO_Port, MOTR_IN1_Pin, MOTR_IN2_GPIO_Port, MOTR_IN2_Pin, &encoder_right, &pid_right);
+	
+	ROBOT_INIT(&Robot, &motor_left, &motor_right);
+
+	HAL_TIM_Encoder_Start(Robot.motor_left->encoder->encoder_timer,  TIM_CHANNEL_ALL);
+	HAL_TIM_Encoder_Start(Robot.motor_right->encoder->encoder_timer, TIM_CHANNEL_ALL);
+	
+	HAL_TIM_PWM_Start(Robot.motor_left->pwm_timer,  Robot.motor_left->pwm_timer_channel);
+	HAL_TIM_PWM_Start(Robot.motor_right->pwm_timer, Robot.motor_right->pwm_timer_channel);
+	
+	HAL_TIM_Base_Start_IT(&htim5);
 
 	NRF24_begin(GPIOA, SPI3_CS_Pin, nrf_CE_PIN, hspi3);
 	
@@ -192,6 +228,27 @@ void LED_UPDATE(void)
 		led_tick = HAL_GetTick();
 	}
 	
+}
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)				// ################## przerwanie od TIMera aby uzyskac przerwanie co 1ms  ######################################################
+{
+  /* Prevent unused argument(s) compilation warning */
+ //UNUSED(htim);
+
+  /* NOTE : This function should not be modified, when the callback is needed,
+            the HAL_TIM_PeriodElapsedCallback could be implemented in the user file
+   */
+
+	MOTOR_UPDATE_VELOCITY(Robot.motor_left);
+	MOTOR_UPDATE_VELOCITY(Robot.motor_right);
+	
+	MOTOR_UPDATE_PID(Robot.motor_left);
+	MOTOR_UPDATE_PID(Robot.motor_right);
+	
+	PID_CALCULATE(Robot.motor_left->pid);
+	PID_CALCULATE(Robot.motor_right->pid);
+	
+	MOTOR_UPDATE_PWM(Robot.motor_left);
+	MOTOR_UPDATE_PWM(Robot.motor_right);
 }
 /* USER CODE END 4 */
 
