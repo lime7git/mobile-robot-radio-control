@@ -6,6 +6,7 @@
 #include "encoder.h"
 #include "pid.h"
 #include <math.h>
+#include <stdlib.h>
 
 typedef struct {
 	
@@ -35,5 +36,6 @@ void MOTOR_SET_VELOCITY(sMotor *motor, float velocity);
 void MOTOR_UPDATE_VELOCITY(sMotor *motor);
 void MOTOR_UPDATE_PID(sMotor *motor);
 void MOTOR_UPDATE_PWM(sMotor *motor);
+void MOTOR_STOP(sMotor *motor);
 
 #endif

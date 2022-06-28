@@ -39,3 +39,4 @@ robot-receiver\robot.o: motor.h
 robot-receiver\robot.o: encoder.h
 robot-receiver\robot.o: pid.h
 robot-receiver\robot.o: D:\Programy\ARM-Keil\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+robot-receiver\robot.o: D:\Programy\ARM-Keil\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h

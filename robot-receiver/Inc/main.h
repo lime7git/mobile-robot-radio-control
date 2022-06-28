@@ -36,13 +36,13 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-typedef struct sRadioFrame {	
+typedef struct  {	
 	
 	uint8_t  enable;
 	uint16_t velocity_front;
 	uint16_t velocity_direction;
 	
-} sRadio_frame;
+} sRadioFrame;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

@@ -61,6 +61,8 @@ sPid pid_right;
 sMotor motor_left;
 sMotor motor_right;
 
+sRadioFrame radio_frame;
+
 sRobot Robot;
 
 uint32_t led_tick = 0;
@@ -123,16 +125,16 @@ int main(void)
   MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
 
-	PID_INIT(&pid_left, 	0.02f, 0.0f, 0.0f, 25000);
-	PID_INIT(&pid_right, 	0.02f, 0.0f, 0.0f, 25000);
+	PID_INIT(&pid_left, 	0.15f, 0.4f, 0.001f, 2500);
+	PID_INIT(&pid_right, 	0.15f, 0.4f, 0.001f, 2500);
 	
 	ENCODER_INIT(&encoder_left, 	&htim3);
 	ENCODER_INIT(&encoder_right, 	&htim4);
 	
-	MOTOR_INIT(&motor_left, 	&htim1, TIM_CHANNEL_1, MOTL_IN3_GPIO_Port, MOTL_IN3_Pin, MOTL_IN4_GPIO_Port, MOTL_IN4_Pin, &encoder_left,  &pid_left);
+	MOTOR_INIT(&motor_left, 	&htim1, TIM_CHANNEL_1, MOTL_IN4_GPIO_Port, MOTL_IN4_Pin, MOTL_IN3_GPIO_Port, MOTL_IN3_Pin, &encoder_left,  &pid_left);
 	MOTOR_INIT(&motor_right, 	&htim2, TIM_CHANNEL_2, MOTR_IN1_GPIO_Port, MOTR_IN1_Pin, MOTR_IN2_GPIO_Port, MOTR_IN2_Pin, &encoder_right, &pid_right);
 	
-	ROBOT_INIT(&Robot, &motor_left, &motor_right);
+	ROBOT_INIT(&Robot, &motor_left, &motor_right, &radio_frame);
 
 	HAL_TIM_Encoder_Start(Robot.motor_left->encoder->encoder_timer,  TIM_CHANNEL_ALL);
 	HAL_TIM_Encoder_Start(Robot.motor_right->encoder->encoder_timer, TIM_CHANNEL_ALL);
@@ -146,7 +148,7 @@ int main(void)
 	
 	NRF24_setAutoAck(false);
 	NRF24_setChannel(50);
-	NRF24_setPayloadSize(4);
+	NRF24_setPayloadSize(6);
 	NRF24_openReadingPipe(1, rx_pipe_address);
 	NRF24_startListening();
 
@@ -162,7 +164,7 @@ int main(void)
 		
 		if(NRF24_available())
 		{
-			if(NRF24_read(joystick, 4)) 
+			if(NRF24_read(Robot.radio_frame, 6)) 
 			{
 				received_packet++;
 			}
@@ -241,14 +243,24 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)				// ##############
 	MOTOR_UPDATE_VELOCITY(Robot.motor_left);
 	MOTOR_UPDATE_VELOCITY(Robot.motor_right);
 	
+	ROBOT_UPDATE_VELOCITY(&Robot);
+	
 	MOTOR_UPDATE_PID(Robot.motor_left);
 	MOTOR_UPDATE_PID(Robot.motor_right);
 	
 	PID_CALCULATE(Robot.motor_left->pid);
 	PID_CALCULATE(Robot.motor_right->pid);
 	
-	MOTOR_UPDATE_PWM(Robot.motor_left);
-	MOTOR_UPDATE_PWM(Robot.motor_right);
+	if(Robot.radio_frame->enable == 1) 
+	{
+		MOTOR_UPDATE_PWM(Robot.motor_left);
+		MOTOR_UPDATE_PWM(Robot.motor_right);
+	}
+	else
+	{
+		MOTOR_STOP(Robot.motor_left);
+		MOTOR_STOP(Robot.motor_right);
+	}
 }
 /* USER CODE END 4 */
 

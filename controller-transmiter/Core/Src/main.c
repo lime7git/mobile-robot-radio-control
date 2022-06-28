@@ -31,7 +31,13 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+typedef struct  {	
+	
+	uint8_t  enable;
+	uint16_t velocity_front;
+	uint16_t velocity_direction;
+	
+} sRadioFrame;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -47,6 +53,9 @@
 
 /* USER CODE BEGIN PV */
 
+sRadioFrame radio_frame;
+
+sRadioFrame *radio_ptr = &radio_frame;
 
 int counter = 0;
 
@@ -115,7 +124,9 @@ int main(void)
 	NRF24_openWritingPipe(tx_pipe_address);
 	NRF24_setAutoAck(false);
 	NRF24_setChannel(50);
-	NRF24_setPayloadSize(4);
+	NRF24_setPayloadSize(6);
+	
+	radio_frame.enable = 0;
 
   /* USER CODE END 2 */
 
@@ -129,23 +140,28 @@ int main(void)
 		
 		if(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET)
 		{
-			sprintf(tx_buffer, "NRF24L01+ communication %d", counter);
-
-			if(NRF24_write(tx_buffer, 32))
+			if(radio_frame.enable == 1) 
+			{
+				radio_frame.enable = 0;
+			}
+				else if(radio_frame.enable == 0)
+				{
+					radio_frame.enable = 1;
+				}
+				
+			HAL_Delay(500);
+		}
+		
+	
+			radio_frame.velocity_front = joystick[0];
+			radio_frame.velocity_direction = joystick[1];
+			
+			if(NRF24_write(radio_ptr, 6))
 			{
 				HAL_UART_Transmit(&huart2, (uint8_t *)"Successfully!\r\n", strlen("Successfully!\r\n"), 10);
 			}
-			counter++;
-			HAL_Delay(1000);
-		}
+			HAL_Delay(100);
 		
-		
-		//sprintf(tx_buffer, "%d;%d", joystick[0], joystick[1]);
-		if(NRF24_write(joystick, 4))
-		{
-			HAL_UART_Transmit(&huart2, (uint8_t *)"Successfully!\r\n", strlen("Successfully!\r\n"), 10);
-		}
-		HAL_Delay(100);
   }
   /* USER CODE END 3 */
 }

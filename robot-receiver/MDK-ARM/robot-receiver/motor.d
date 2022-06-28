@@ -38,3 +38,4 @@ robot-receiver\motor.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex
 robot-receiver\motor.o: encoder.h
 robot-receiver\motor.o: pid.h
 robot-receiver\motor.o: D:\Programy\ARM-Keil\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+robot-receiver\motor.o: D:\Programy\ARM-Keil\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h

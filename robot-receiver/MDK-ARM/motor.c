@@ -26,6 +26,9 @@ void MOTOR_UPDATE_VELOCITY(sMotor *motor)
 	motor->encoder->value = ENCODER_GET_VALUE(motor->encoder);
 	motor->encoder->difference = motor->encoder->value - motor->encoder->previous_value;
 	
+	if(motor->encoder->difference > 32768)  motor->encoder->difference -= 65536;
+	if(motor->encoder->difference < -32768) motor->encoder->difference =  65536 - abs(motor->encoder->difference);
+	
 	motor->current_velocity_rpm = ((float)motor->encoder->difference / TIME_STAMP * 60.0f) / ENCODER_IMPULSES_PER_ROTATE;
 	motor->current_velocity_rpm_filtered = 0.854f * motor->current_velocity_rpm_filtered + 0.0728f * motor->current_velocity_rpm + 0.0728f * motor->previous_velocity_rpm;
 	motor->previous_velocity_rpm = motor->current_velocity_rpm;
@@ -55,4 +58,10 @@ void MOTOR_UPDATE_PWM(sMotor *motor)
 				HAL_GPIO_WritePin(motor->in_b_gpio_port, motor->in_b_gpio_pin, GPIO_PIN_RESET);
 				__HAL_TIM_SET_COMPARE(motor->pwm_timer, motor->pwm_timer_channel, 1000);
 			}		
+}
+void MOTOR_STOP(sMotor *motor)
+{
+	HAL_GPIO_WritePin(motor->in_a_gpio_port, motor->in_a_gpio_pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(motor->in_b_gpio_port, motor->in_b_gpio_pin, GPIO_PIN_RESET);
+	__HAL_TIM_SET_COMPARE(motor->pwm_timer, motor->pwm_timer_channel, 1000);
 }
