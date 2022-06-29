@@ -40,3 +40,12 @@ void PID_CALCULATE(sPid *pid)
 			pid->out = -1.0f;
 		}	
 }
+void PID_RESET(sPid *pid)
+{
+	pid->set_value 			= 0.0f;
+	pid->current_value 	= 0.0f;
+	pid->error 					= 0.0f;
+	pid->previous_error = 0.0f;
+	pid->total_error		= 0.0f;
+	pid->out 						= 0.0f;
+}

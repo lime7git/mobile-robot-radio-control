@@ -71,7 +71,7 @@ uint32_t received_packet = 0;
 
 //nRF24 
 uint64_t rx_pipe_address = 0x1111111111;
-char rx_buffer[32];
+uint32_t ack_payload = 123456;
 uint16_t joystick[2];
 
 /* USER CODE END PV */
@@ -125,8 +125,8 @@ int main(void)
   MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
 
-	PID_INIT(&pid_left, 	0.15f, 0.4f, 0.001f, 2500);
-	PID_INIT(&pid_right, 	0.15f, 0.4f, 0.001f, 2500);
+	PID_INIT(&pid_left, 	0.1f, 0.03f, 0.001f, 3500);
+	PID_INIT(&pid_right, 	0.095f, 0.021f, 0.001f, 3500);
 	
 	ENCODER_INIT(&encoder_left, 	&htim3);
 	ENCODER_INIT(&encoder_right, 	&htim4);
@@ -146,10 +146,13 @@ int main(void)
 
 	NRF24_begin(GPIOA, SPI3_CS_Pin, nrf_CE_PIN, hspi3);
 	
-	NRF24_setAutoAck(false);
+	NRF24_setAutoAck(true);
 	NRF24_setChannel(50);
 	NRF24_setPayloadSize(6);
 	NRF24_openReadingPipe(1, rx_pipe_address);
+	NRF24_enableDynamicPayloads();
+	NRF24_enableAckPayload();
+	
 	NRF24_startListening();
 
   /* USER CODE END 2 */
@@ -167,6 +170,7 @@ int main(void)
 			if(NRF24_read(Robot.radio_frame, 6)) 
 			{
 				received_packet++;
+				NRF24_writeAckPayload(1, &ack_payload, 6);
 			}
 		}
 		
@@ -260,6 +264,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)				// ##############
 	{
 		MOTOR_STOP(Robot.motor_left);
 		MOTOR_STOP(Robot.motor_right);
+		PID_RESET(Robot.motor_left->pid);
+		PID_RESET(Robot.motor_right->pid);
 	}
 }
 /* USER CODE END 4 */

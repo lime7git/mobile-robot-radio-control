@@ -26,5 +26,6 @@ typedef struct {
 
 void PID_INIT(sPid *pid, float kp, float ki, float kd, float anti_windup_limit);
 void PID_CALCULATE(sPid *pid);
+void PID_RESET(sPid *pid);
 
 #endif

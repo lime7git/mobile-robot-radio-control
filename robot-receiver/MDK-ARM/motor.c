@@ -18,6 +18,9 @@ void MOTOR_INIT(sMotor *motor, TIM_HandleTypeDef *pwm_timer, uint16_t pwm_timer_
 }
 void MOTOR_SET_VELOCITY(sMotor *motor, float velocity)
 {
+	if(velocity > 90.0f)  velocity = 90.0f;
+	if(velocity < -90.0f) velocity = -90.0f;
+	
 	motor->velocity_rpm = velocity;
 }
 void MOTOR_UPDATE_VELOCITY(sMotor *motor)
@@ -61,7 +64,7 @@ void MOTOR_UPDATE_PWM(sMotor *motor)
 }
 void MOTOR_STOP(sMotor *motor)
 {
-	HAL_GPIO_WritePin(motor->in_a_gpio_port, motor->in_a_gpio_pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(motor->in_b_gpio_port, motor->in_b_gpio_pin, GPIO_PIN_RESET);
-	__HAL_TIM_SET_COMPARE(motor->pwm_timer, motor->pwm_timer_channel, 1000);
+	HAL_GPIO_WritePin(motor->in_a_gpio_port, motor->in_a_gpio_pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(motor->in_b_gpio_port, motor->in_b_gpio_pin, GPIO_PIN_SET);
+	__HAL_TIM_SET_COMPARE(motor->pwm_timer, motor->pwm_timer_channel, motor->pwm_timer->Init.Period);
 }

@@ -64,7 +64,11 @@ uint16_t joystick[2];
 
 //nRF24
 uint64_t tx_pipe_address = 0x1111111111;
-char tx_buffer[32];
+uint32_t ack_payload_reference = 123456;
+uint32_t ack_payload;
+
+uint32_t ack_successful_counter = 0;
+uint32_t ack_fail_counter = 0;
 
 /* USER CODE END PV */
 
@@ -122,9 +126,12 @@ int main(void)
 	
 	NRF24_stopListening();
 	NRF24_openWritingPipe(tx_pipe_address);
-	NRF24_setAutoAck(false);
+	NRF24_setAutoAck(true);
 	NRF24_setChannel(50);
 	NRF24_setPayloadSize(6);
+	
+	NRF24_enableDynamicPayloads();
+	NRF24_enableAckPayload();
 	
 	radio_frame.enable = 0;
 
@@ -148,19 +155,29 @@ int main(void)
 				{
 					radio_frame.enable = 1;
 				}
+					else radio_frame.enable = 0;
 				
 			HAL_Delay(500);
 		}
 		
-	
 			radio_frame.velocity_front = joystick[0];
 			radio_frame.velocity_direction = joystick[1];
 			
 			if(NRF24_write(radio_ptr, 6))
 			{
-				HAL_UART_Transmit(&huart2, (uint8_t *)"Successfully!\r\n", strlen("Successfully!\r\n"), 10);
+				NRF24_read(&ack_payload, 6);
+				
+				if(ack_payload == ack_payload_reference) 
+				{
+					ack_successful_counter++;
+				}
+				else
+				{
+					ack_fail_counter++;
+				}
 			}
-			HAL_Delay(100);
+		
+			HAL_Delay(10);
 		
   }
   /* USER CODE END 3 */

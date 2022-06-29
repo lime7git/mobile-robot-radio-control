@@ -4,7 +4,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-#define ENCODER_IMPULSES_PER_ROTATE 3840.0f
+#define ENCODER_IMPULSES_PER_ROTATE 1920.0f
 
 typedef struct {
 	
